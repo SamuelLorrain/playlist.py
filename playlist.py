@@ -10,9 +10,9 @@ from config import *
 ############################################################################
 #
 # TODO:
-# - Checker des types de fichiers (virer les desktop.ini, les Folder.jpg etc.)
+# - Checker plus de types de fichiers ?
 # - Meilleure gestion de gnome-mpv (api mpv à la place ?)
-# - mise en cache
+# - Mise en cache
 #
 ############################################################################
 
@@ -33,13 +33,26 @@ class Playlist:
             pass
 
     def uncheck(self):
+        """
+        Used with -n, allow to play an album
+        without get rid of it.
+        """
         self.check=False
 
     def append_log(self):
+        """
+        Add the album played to the log,
+        ensure that it will not be played anymore
+        """
         with open(os.fspath(self.PATH_TO_LOG),'a') as log:
             log.write(''.join((os.fspath(self.PATH_TO_PLAYLIST),'\n')))
 
     def create_playlist(self):
+        """
+        Shuffle the next album to play in the BDD:
+        Create the playlist, use the BDD to fill the the playlist.
+        And, use the checklist and compare the two (if check is true).
+        """
         checkList = []
         artists = os.listdir(os.fspath(self.PATH_TO_BDD))
 
@@ -57,7 +70,12 @@ class Playlist:
         pathToArtist = self.PATH_TO_BDD/self.CURRENT_ARTIST
 
         albums = os.listdir(os.fspath(pathToArtist))
+
+        #check if the album name is valid (will do if the album is not called
+        #by those names)
         self.CURRENT_ALBUM = random.choice(albums)
+        while self.CURRENT_ALBUM in ['desktop.ini','.DS_Store','']:
+            self.CURRENT_ALBUM = random.choice(albums)
 
         self.PATH_TO_PLAYLIST = self.PATH_TO_BDD / self.CURRENT_ARTIST / self.CURRENT_ALBUM
 
@@ -71,13 +89,15 @@ class Playlist:
         print(self.PATH_TO_PLAYLIST)
 
     def launch_playlist(self):
+        """
+        Launch the playlist with gnome-mpv
+        """
         if self.PATH_TO_PLAYLIST == "":
-            raise ValueError("create_playlist() must be called first")
+            raise ValueError("The playlist is not reachable.\nMaybe create_playlist() must be called first.")
         if self.check:
             self.append_log()
 
-        #self.playlist.insert(0,'--no-audio-display')
-        self.playlist.insert(0,'gnome-mpv')
+        self.playlist.insert(0,config["player"])
         proc = subprocess.Popen(self.playlist, stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL)
         proc.wait()
