@@ -1,6 +1,6 @@
 #playlist.py
 
-A little program used to launch music randomly choosen in
+A little program to launch music randomly choosen in
 a directory.
 
 The main purpose is to play music in a DB without using any DB system
