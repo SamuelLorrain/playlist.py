@@ -17,11 +17,11 @@ from config import *
 ############################################################################
 
 class Playlist:
-    def __init__(self,bdd,log,check=True):
+    def __init__(self,db,log,check=True):
         self.check=check
-        self.PATH_TO_BDD = Path(bdd)
-        if not self.PATH_TO_BDD.exists():
-            raise ValueError("the bdd does not exist, unable to create playlist!")
+        self.PATH_TO_DB = Path(db)
+        if not self.PATH_TO_DB.exists():
+            raise ValueError("the db does not exist, unable to create playlist!")
         self.PATH_TO_LOG = Path(log)
         self.CURRENT_ARTIST = ""
         self.CURRENT_ALBUM = ""
@@ -49,12 +49,12 @@ class Playlist:
 
     def create_playlist(self):
         """
-        Shuffle the next album to play in the BDD:
-        Create the playlist, use the BDD to fill the the playlist.
+        Shuffle the next album to play in the DB:
+        Create the playlist, use the DB to fill the the playlist.
         And, use the checklist and compare the two (if check is true).
         """
         checkList = []
-        artists = os.listdir(os.fspath(self.PATH_TO_BDD))
+        artists = os.listdir(os.fspath(self.PATH_TO_DB))
 
         #CHECK FOR LOG ERROR
         if self.check:
@@ -67,7 +67,7 @@ class Playlist:
 
         self.CURRENT_ARTIST = random.choice(artists)
 
-        pathToArtist = self.PATH_TO_BDD/self.CURRENT_ARTIST
+        pathToArtist = self.PATH_TO_DB/self.CURRENT_ARTIST
 
         albums = os.listdir(os.fspath(pathToArtist))
 
@@ -77,7 +77,7 @@ class Playlist:
         while self.CURRENT_ALBUM in ['desktop.ini','.DS_Store','']:
             self.CURRENT_ALBUM = random.choice(albums)
 
-        self.PATH_TO_PLAYLIST = self.PATH_TO_BDD / self.CURRENT_ARTIST / self.CURRENT_ALBUM
+        self.PATH_TO_PLAYLIST = self.PATH_TO_DB / self.CURRENT_ARTIST / self.CURRENT_ALBUM
 
         #check if the album has already been played
         if self.check:
@@ -90,7 +90,7 @@ class Playlist:
 
     def launch_playlist(self):
         """
-        Launch the playlist with gnome-mpv
+        Launch the playlist with config["player"]
         """
         if self.PATH_TO_PLAYLIST == "":
             raise ValueError("The playlist is not reachable.\nMaybe create_playlist() must be called first.")
@@ -102,9 +102,15 @@ class Playlist:
                 stderr=subprocess.DEVNULL)
         proc.wait()
 
-play = Playlist(config["bdd"],config["log"])
+play = Playlist(config["db"],config["log"])
 
 def main():
+    """
+    -n play any album without checking if it has been already played,
+       and dont add it to the check log.
+    -l loop for another album when the first have been played without
+       asking for it.
+    """
     try:
         loop = False
         if '-n' in sys.argv:

@@ -6,8 +6,8 @@ import sys
 
 if __name__ == "__main__":
     configString = """config = {
-        "bdd":"%s",
-        "log":"%s"
+        "db":"%s",
+        "log":"%s",
         "player":"%s"
     }
     """
@@ -17,12 +17,12 @@ if __name__ == "__main__":
         raise ValueError("config file already exists")
 
     if '-n' not in sys.argv:
-        bdd = input("what is the path to the bdd ? ")
+        db = input("what is the path to the db ? ")
         log = input("what is the path to the log file ? ")
         player = input("what program do you want to use to play music ?")
 
     with open('config.py','w') as configFile:
-        configFile.write(configString % (bdd,log,player))
+        configFile.write(configString % (db,log,player))
 
     if configFileCheck.exists():
         print("File generated!")
